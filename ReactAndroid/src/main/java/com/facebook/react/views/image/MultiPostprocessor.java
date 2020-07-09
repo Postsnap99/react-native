@@ -64,7 +64,6 @@ public class MultiPostprocessor implements Postprocessor {
     } else {
       return new MultiCacheKey(keys);
     }
-    return new MultiCacheKey(keys);
   }
 
   @Override
