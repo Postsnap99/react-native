@@ -9,6 +9,7 @@
 
 #import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
+#import <React/RCTImageSource.h>
 #import <React/RCTLog.h>
 #import <React/RCTUIManager.h>
 #import <React/RCTUtils.h>
@@ -72,6 +73,8 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions:(NSDictionary *)options
     NSNumber *destructiveButtonIndex = options[@"destructiveButtonIndex"] ? [RCTConvert NSNumber:options[@"destructiveButtonIndex"]] : @-1;
     destructiveButtonIndices = @[destructiveButtonIndex];
   }
+  NSArray<RCTImageSource *> *icons = [RCTConvert RCTImageSourceArray:options[@"icons"]];
+  bool tintIcons = options[@"tintIcons"] == nil ? true : [RCTConvert BOOL:options[@"tintIcons"]];
 
   UIViewController *controller = RCTPresentedViewController();
 
@@ -102,11 +105,20 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions:(NSDictionary *)options
     }
 
     NSInteger localIndex = index;
-    [alertController addAction:[UIAlertAction actionWithTitle:option
+    UIAlertAction *action = [UIAlertAction actionWithTitle:option
                                                         style:style
                                                       handler:^(__unused UIAlertAction *action){
       callback(@[@(localIndex)]);
-    }]];
+    }];
+    if (index < icons.count) {
+      NSURL *iconURL = icons[index].request.URL;
+      UIImage *iconImage = [UIImage imageWithData:[NSData dataWithContentsOfURL:iconURL]];
+      if (!tintIcons) {
+        iconImage = [iconImage imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+      }
+      [action setValue:iconImage forKey:@"image"];
+    }
+    [alertController addAction:action];
 
     index++;
   }
